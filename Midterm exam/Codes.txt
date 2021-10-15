@@ -1,0 +1,48 @@
+import numpy as np
+import pandas as pd
+df = pd.read_excel (r'Midterm_Exam (1).xlsx')
+S0 = insert value here
+Sd0 = insert value here
+Sg0 = insert value here
+Sb = insert value here
+Gamma = insert value here
+kd = insert value here
+kb = insert value here
+a = insert value here
+df['S0'] = S0
+df['Sd0'] = Sd0
+df['Sg0'] = Sg0
+df['kd'] = kd
+df['kb'] = kb
+df['Sb'] = Sb
+df['a'] = a
+df['Gamma'] = Gamma
+df['date'] = df['Year'].astype(str) + "-" +  df['Month'].astype(str) + "-" + df['Day'].astype(str)
+for i in range(1, len(df)):
+    df['m'] = (df['S0'] * (2*df['Sb'] - df['a']*df['S0']))/(2 * df['Sb'] * (df['Sb'] - df['S0']))
+    df['W'] = (df['P'] + df['Sb']*(((1+df['m'])**2 - 2*df['a']*df['m'])**0.5) - ((((df['P'] + (1+df['m'])*df['Sb']))**2 - 2*df['a']*df['m'] * (df['Sb'] ** 2) - 2*df['a']*df['Sb']*df['P']))**0.5)/df['a']
+    df['Es'] = (df['Ep'] + df['Sb'] - ((df['Ep']+df['Sb'])**2 - 2*df['a']*df['Sb']*df['Ep'])**0.5)/df['a']
+    df['E'] = (((df['W'] + df['S0'])/df['Sb']) * df['Es'])
+    df.loc[i, 'S0'] = (df.loc[i-1,'S0']) + (df.loc[i-1, 'W'] - df.loc[i-1, 'E'])
+    df['R'] = df['P'] - df['W']
+    df['Rd'] = df['Gamma'] * df['R']
+    df['Rg'] = (1 - df['Gamma']) * df['R']
+    df.loc[i, 'Sd0'] = (1-df.loc[i,'kd']) * (df.loc[i-1, 'Sd0'] + df.loc[i-1, 'Rd'])
+    df.loc[i, 'Sg0'] = (1-df.loc[i,'kb']) * (df.loc[i-1, 'Sg0'] + df.loc[i-1, 'Rg'])
+    df['Qd'] = df['kd'] * (df['Sd0'] + df['Rd'])
+    df['Qb'] = df['kb'] * (df['Sg0'] + df['Rg'])
+    df['QSIM'] = df['Qd'] + df['Qb']
+Qm = df.QSIM
+Qm = np.array(Qm)
+Q0 = df.Q
+Q0 = np.array(Q0)
+Q0mean = np.mean(Q0)
+df1['Qm'] = pd.DataFrame(Qm)
+df1['Q0'] = pd.DataFrame(Q0)
+df1['Q0mean'] = Q0mean
+df2 = (df1['Qm'] - df1['Q0'])**2
+df3 = (df1['Q0'] - df1['Q0mean'])**2
+df4 = np.sum(df2)
+df5 = np.sum(df3)
+NSE = 1 - (df4/df5)
+NSE
